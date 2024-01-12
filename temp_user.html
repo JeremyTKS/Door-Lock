@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLocker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="box">
+        <div class="form">
+            <h2>Smart Locking</h2>
+            <form>
+                <div class="inputbox">
+                    <input type="text" value="" id="username" required>
+                    <span>Username</span>
+                </div>
+                <div class="inputbox">
+                    <input type="text" value="" id="otp" required>
+                    <span>OTP</span>
+                </div>
+                <input type="submit" value="submit" class="sub" id="submit">
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-storage.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB00YN0UnoQ4pKKhattdioXX8ENfu9_gNw",
+            authDomain: "locker-monitor.firebaseapp.com",
+            databaseURL: "https://locker-monitor-default-rtdb.firebaseio.com",
+            projectId: "locker-monitor",
+            storageBucket: "locker-monitor.appspot.com",
+            messagingSenderId: "689513388821",
+            appId: "1:689513388821:web:106982ca448e005b04a71c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Get references to Firebase services
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        document.getElementById("submit").addEventListener('click', async function(e){
+            e.preventDefault();
+
+            // Store a reference to the form and input fields
+            const form = document.querySelector('form');
+            const submitButton = document.getElementById("submit"); // Added this line
+
+            // Disable the submit button to prevent duplicate submissions
+            submitButton.disabled = true;
+
+            const usernameInput = document.getElementById("username");
+            const otpInput = document.getElementById("otp");
+
+            // Check if any of the required fields are empty
+            if (usernameInput.value === "" || otpInput.value === "" ) {
+                alert("Please fill out all fields.");
+
+                // Re-enable the submit button
+                submitButton.disabled = false;
+            } else if (!/^\d{6}$/.test(otpInput.value)) {
+                // Check if OTP is not a 6-digit number
+                alert("OTP must be a 6-digit number.");
+
+                // Re-enable the submit button
+                submitButton.disabled = false;
+            } else {
+                // Check if the username already exists
+                const usernameRef = ref(db, 'Temp_User/' + usernameInput.value);
+                const usernameSnapshot = await get(usernameRef);
+
+                if (usernameSnapshot.exists()) {
+                    alert("Username already exists. Please choose a different username.");
+
+                    // Re-enable the submit button
+                    submitButton.disabled = false;
+                    return;
+                }
+
+                // Set data in Firebase Realtime Database after validation
+                set(ref(db, 'Temp_User/' + usernameInput.value), {
+                    Username: usernameInput.value,
+                    OTP: otpInput.value,
+                })
+                .then(() => {
+                    // Reset the form after successful submission
+                    form.reset();
+                    alert("Submit Successful!");
+                    
+                    // Go back to the previous page
+                    window.history.back();
+                })
+                .catch((error) => {
+                    console.error("Error submitting data:", error);
+                    alert("Error submitting data. Please try again.");
+                })
+                .finally(() => {
+                    // Re-enable the submit button
+                    submitButton.disabled = false;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
