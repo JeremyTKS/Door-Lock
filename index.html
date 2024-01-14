@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Door Lock</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="box">
+        <div class="form">
+            <h2>Admin Login</h2>
+            <form>
+                <div class="inputbox">
+                    <input type="password" value="" id="password" required>
+                    <span>Password</span>
+                </div>
+                <input type="submit" value="Login" class="sub" id="login">
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-storage.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB00YN0UnoQ4pKKhattdioXX8ENfu9_gNw",
+            authDomain: "locker-monitor.firebaseapp.com",
+            databaseURL: "https://locker-monitor-default-rtdb.firebaseio.com",
+            projectId: "locker-monitor",
+            storageBucket: "locker-monitor.appspot.com",
+            messagingSenderId: "689513388821",
+            appId: "1:689513388821:web:106982ca448e005b04a71c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Get references to Firebase services
+        const db = getDatabase(app);
+
+        document.getElementById("login").addEventListener('click', async function(e){
+            e.preventDefault();
+
+            // Store a reference to the form and input fields
+            const form = document.querySelector('form');
+            const submitButton = document.getElementById("login"); // Added this line
+
+            // Disable the submit button to prevent duplicate submissions
+            submitButton.disabled = true;
+
+            const passwordInput = document.getElementById("password");
+
+            // Check if any of the required fields are empty
+            if (passwordInput.value === "" ) {
+                alert("Please fill out the password.");
+
+                // Re-enable the submit button
+                submitButton.disabled = false;
+            } else {
+                // Check if the entered password matches the one in the database
+                const passwordRef = ref(db, 'Password'); // Replace 'Password' with the actual path in your database
+                const passwordSnapshot = await get(passwordRef);
+
+                if (passwordSnapshot.exists() && passwordSnapshot.val() === passwordInput.value) {
+                    alert("Password is correct! Proceed to Host Page.");
+                    // Password matches, you can proceed with your logic or redirect to another page
+                    window.location.href = 'host.html';
+                } else {
+                    alert("Incorrect password. Please try again.");
+
+                    // Re-enable the submit button
+                    submitButton.disabled = false;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
